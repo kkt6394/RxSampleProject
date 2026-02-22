@@ -11,12 +11,21 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
 
-
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let scene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: scene)
         
-        window?.rootViewController = NumbersViewController()
+        let tabBarController = UITabBarController()
+        let vc1 = NumbersViewController()
+        let vc2 = SimpleTableViewExampleViewController()
+        let vc3 = SimpleValidationViewController()
+        tabBarController.viewControllers = [vc1, vc2, vc3]
+        
+        vc1.tabBarItem = UITabBarItem(title: "Number", image: UIImage(systemName: "numbers"), tag: 0)
+        vc2.tabBarItem = UITabBarItem(title: "TableView", image: UIImage(systemName: "tablecells"), tag: 1)
+        vc3.tabBarItem = UITabBarItem(title: "Validation", image: UIImage(systemName: "circle.badge.checkmark"), tag: 2)
+
+        window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()
     }
 
