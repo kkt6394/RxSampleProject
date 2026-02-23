@@ -68,10 +68,14 @@ final class NumbersViewController: UIViewController {
     }
     
     private func rxTest() {
-        Observable.combineLatest(number1.rx.text.orEmpty, number2.rx.text.orEmpty, number3.rx.text.orEmpty) { value1, value2, value3 -> Int in
+        Observable.combineLatest(number1.rx.text.orEmpty,
+                                 number2.rx.text.orEmpty,
+                                 number3.rx.text.orEmpty) { value1, value2, value3 -> Int in
             return (Int(value1) ?? 0) + (Int(value2) ?? 0) + (Int(value3) ?? 0)
         }
-        .map(\.description)
+//        .map(\.description) //      \ -> KeyPath(키 경로), 특정 프로퍼티의 위치를 가리키는 역할.
+//        .map { $0.description }     // CustomStringConvertible 프로토콜을 채택한 객체
+        .map { String($0) }           // String 인스턴스 새로 생성 -> String(1) 초기화
         .bind(to: result.rx.text)
         .disposed(by: disposeBag)
     }
