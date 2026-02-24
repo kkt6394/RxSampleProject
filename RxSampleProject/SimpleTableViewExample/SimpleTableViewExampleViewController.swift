@@ -11,16 +11,47 @@ import RxCocoa
 import SnapKit
 
 final class SimpleTableViewExampleViewController: UIViewController {
-    let disposeBag = DisposeBag()
-    
+    private let disposeBag = DisposeBag()
+    private let viewModel = SimpleTableViewModel()
     let tableView = UITableView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
         configureUI()
-        rxTest()
+//        rxTest()
+        bind()
     }
+    
+    private func bind() {
+        let input = SimpleTableViewModel.Input(
+            tableViewTap: tableView.rx.modelSelected(String.self),
+            accTap: tableView.rx.itemAccessoryButtonTapped
+        )
+        let output = viewModel.transform(input: input)
+        
+        output.items
+            .bind(to: tableView.rx.items(cellIdentifier: String(describing: SimpleTableViewExampleTableViewCell.self), cellType: SimpleTableViewExampleTableViewCell.self)) { row, element, cell in
+                cell.numlabel.text = "item element: \(element), row: \(row)"
+                cell.accessoryType = .detailButton
+
+            }
+            .disposed(by: disposeBag)
+        
+        output.showAlert
+            .bind(with: self) { owner, value in
+                owner.presentAlert(value)
+            }
+            .disposed(by: disposeBag)
+        
+        output.showAccAlert
+            .bind(with: self) { owner, value in
+                owner.presentAlert(value)
+            }
+            .disposed(by: disposeBag)
+    }
+    
+    
     
     private func configureUI() {
         view.addSubview(tableView)
@@ -42,6 +73,7 @@ final class SimpleTableViewExampleViewController: UIViewController {
                     cell.accessoryType = .detailButton
                 }
                 .disposed(by: disposeBag)
+
         
         tableView.rx.modelSelected(String.self)
             .bind { [weak self] string in
@@ -50,6 +82,7 @@ final class SimpleTableViewExampleViewController: UIViewController {
             }
             .disposed(by: disposeBag)
         
+
         tableView.rx
             .itemAccessoryButtonTapped
             .bind { [weak self] indexPath in

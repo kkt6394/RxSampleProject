@@ -14,7 +14,6 @@ final class HomeworkViewModel {
     private let disposeBag = DisposeBag()
     
     struct Input {
-        let viewDidLoad: BehaviorSubject<Void>
         let tableViewTapped: ControlEvent<SampleUser>
         let searchBarText: ControlProperty<String>
         let searchBarReturn: ControlEvent<Void>

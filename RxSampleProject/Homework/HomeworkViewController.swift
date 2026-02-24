@@ -28,7 +28,6 @@ final class HomeworkViewController: UIViewController {
      
     private func bind() {
         let input = HomeworkViewModel.Input(
-            viewDidLoad: BehaviorSubject<Void>(value: ()),
             tableViewTapped: tableView.rx.modelSelected(SampleUser.self), searchBarText: searchBar.rx.text.orEmpty,
             searchBarReturn: searchBar.rx.searchButtonClicked
         )
@@ -41,7 +40,9 @@ final class HomeworkViewController: UIViewController {
                 cell.configureCell(name: element.name)
                 cell.detailButton.rx.tap
                     .bind(with: self) { owner, _ in
-                        owner.navigationController?.pushViewController(EmptyViewController(), animated: true)
+                        let vc = EmptyViewController()
+                        owner.navigationController?.pushViewController(vc, animated: true)
+                        vc.navigationItem.title = element.name
                     }
                     .disposed(by: cell.disposeBag)
                 return cell
