@@ -27,8 +27,11 @@ final class HomeworkViewController: UIViewController {
     }
      
     private func bind() {
-        let input = HomeworkViewModel.Input()
-        
+        let input = HomeworkViewModel.Input(
+            viewDidLoad: BehaviorSubject<Void>(value: ()),
+            tableViewTapped: tableView.rx.modelSelected(SampleUser.self), searchBarText: searchBar.rx.text.orEmpty,
+            searchBarReturn: searchBar.rx.searchButtonClicked
+        )
         let output = viewModel.transform(input: input)
         
         output.users
@@ -40,28 +43,19 @@ final class HomeworkViewController: UIViewController {
             }
             .disposed(by: disposeBag)
         
-        tableView.rx.modelSelected(SampleUser.self)
-            .bind(to: input.tableViewTapped)
-            .disposed(by: disposeBag)
-        
         output.selectedUsers
             .bind(to: collectionView.rx.items(cellIdentifier: UserCollectionViewCell.identifier, cellType: UserCollectionViewCell.self)) { (row, element, cell) in
                 cell.configureCell(text: element.name)
             }
             .disposed(by: disposeBag)
         
-        searchBar.rx.searchButtonClicked
-            .withLatestFrom(searchBar.rx.text.orEmpty)
-            .bind(to: input.searchBarReturn)
-            .disposed(by: disposeBag)
-        
-        searchBar.rx.searchButtonClicked
+        output.clearSearchBar
             .bind(with: self) { owner, _ in
                 owner.searchBar.text = ""
                 owner.searchBar.resignFirstResponder()
             }
             .disposed(by: disposeBag)
-                
+    
     }
     
     private func configure() {

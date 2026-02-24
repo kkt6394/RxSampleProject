@@ -14,50 +14,54 @@ final class HomeworkViewModel {
     private let disposeBag = DisposeBag()
     
     struct Input {
-        let viewDidLoad = BehaviorSubject<Void>(value: ())
-        let tableViewTapped = PublishSubject<SampleUser>()
-        let searchBarReturn = PublishSubject<String>()
+        let viewDidLoad: BehaviorSubject<Void>
+        let tableViewTapped: ControlEvent<SampleUser>
+        let searchBarText: ControlProperty<String>
+        let searchBarReturn: ControlEvent<Void>
     }
+    
     struct Output {
         let users: BehaviorSubject<[SampleUser]>
-        let selectedUsers: Observable<[SampleUser]>
+        let selectedUsers: BehaviorSubject<[SampleUser]>
+        let clearSearchBar: PublishRelay<Void>
     }
     
     func transform(input: Input) -> Output {
-        let users = makeUserList(event: input.viewDidLoad)
-        let selectedUsers = makeSelectedUserList(event: input.tableViewTapped)
+        let users = BehaviorSubject<[SampleUser]>(value: dummyUsers)
+        let selectedUsers = BehaviorSubject<[SampleUser]>(value: [])
+        let clearSearchBar = PublishRelay<Void>()
+        
+        input.tableViewTapped
+            .withLatestFrom(selectedUsers) { newUser, currentUser in
+                var updatedUsers = currentUser
+                updatedUsers.append(newUser)
+                return updatedUsers
+            }
+            .bind(to: selectedUsers)
+            .disposed(by: disposeBag)
         
         input.searchBarReturn
-            .map { SampleUser.init(name: $0, age: 0)}
-            .withLatestFrom(users) { newUser, currentUsers in
-                var newList = currentUsers
-                newList.append(newUser)
-                return newList
+            .withLatestFrom(input.searchBarText)
+            .withLatestFrom(users) { text, currentUser in
+                let newUser = SampleUser(name: text, age: 0)
+                var updatedUsers = currentUser
+                updatedUsers.append(newUser)
+                return updatedUsers
             }
             .bind(to: users)
             .disposed(by: disposeBag)
         
-        return Output(users: users, selectedUsers: selectedUsers)
-    }
-    
-    func makeUserList(event: BehaviorSubject<Void>) -> BehaviorSubject<[SampleUser]> {
-        let userSubject = BehaviorSubject<[SampleUser]>(value: dummyUsers)
-        
-        event
-            .map { _ in dummyUsers }
-            .bind(to: userSubject)
+        input.searchBarReturn
+            .bind { _ in
+                clearSearchBar.accept(())
+            }
             .disposed(by: disposeBag)
         
-        return userSubject
+        
+        
+                
+        return Output(users: users, selectedUsers: selectedUsers, clearSearchBar: clearSearchBar)
     }
-    
-    func makeSelectedUserList(event: PublishSubject<SampleUser>) -> Observable<[SampleUser]> {
-        return event
-            .scan(into: [SampleUser]()) { array, user in
-                array.append(user)
-            }
-    }
-    
     
     
 }
