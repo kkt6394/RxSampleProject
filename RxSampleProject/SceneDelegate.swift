@@ -19,11 +19,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let vc1 = NumbersViewController()
         let vc2 = SimpleTableViewExampleViewController()
         let vc3 = SimpleValidationViewController()
-        tabBarController.viewControllers = [vc1, vc2, vc3]
+        let vc4 = UINavigationController(rootViewController: HomeworkViewController())
+        tabBarController.viewControllers = [vc1, vc2, vc3, vc4]
         
         vc1.tabBarItem = UITabBarItem(title: "Number", image: UIImage(systemName: "numbers"), tag: 0)
         vc2.tabBarItem = UITabBarItem(title: "TableView", image: UIImage(systemName: "tablecells"), tag: 1)
         vc3.tabBarItem = UITabBarItem(title: "Validation", image: UIImage(systemName: "circle.badge.checkmark"), tag: 2)
+        vc4.tabBarItem = UITabBarItem(title: "Homework", image: UIImage(systemName: "fireworks"), tag: 3)
 
         window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()
