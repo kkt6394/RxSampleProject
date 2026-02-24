@@ -7,8 +7,12 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxCocoa
 
 final class PersonTableViewCell: UITableViewCell {
+    
+    var disposeBag = DisposeBag()
     
     static let identifier = "PersonTableViewCell"
     
@@ -47,6 +51,11 @@ final class PersonTableViewCell: UITableViewCell {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        disposeBag = DisposeBag()
     }
     func configureCell(name: String) {
         usernameLabel.text = name

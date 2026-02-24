@@ -39,6 +39,11 @@ final class HomeworkViewController: UIViewController {
                 
                 guard let cell = tableView.dequeueReusableCell(withIdentifier: PersonTableViewCell.identifier) as? PersonTableViewCell else { return  UITableViewCell() }
                 cell.configureCell(name: element.name)
+                cell.detailButton.rx.tap
+                    .bind(with: self) { owner, _ in
+                        owner.navigationController?.pushViewController(EmptyViewController(), animated: true)
+                    }
+                    .disposed(by: cell.disposeBag)
                 return cell
             }
             .disposed(by: disposeBag)
