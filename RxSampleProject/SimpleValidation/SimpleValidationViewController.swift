@@ -14,8 +14,9 @@ private let minimalUsernameLength = 5
 private let minimalPasswordLength = 5
 
 final class SimpleValidationViewController: UIViewController {
-
+    
     private let disposeBag = DisposeBag()
+    private let viewModel = SimpleValidationViewModel()
     
     private let userNameLabel = UILabel()
     private let userNameTF = UITextField()
@@ -24,7 +25,7 @@ final class SimpleValidationViewController: UIViewController {
     private let passwordLabel = UILabel()
     private let passwordTF = UITextField()
     private let passwordValidateLabel = UILabel()
-
+    
     private let actionButton = UIButton()
     
     override func viewDidLoad() {
@@ -35,7 +36,8 @@ final class SimpleValidationViewController: UIViewController {
         
         userNameValidateLabel.text = "Username has to be at least \(minimalUsernameLength) characters"
         passwordValidateLabel.text = "Password has to be at least \(minimalPasswordLength) characters"
-        rxTest()
+        //        rxTest()
+        bind()
     }
     
     private func configureHierarchy() {
@@ -118,25 +120,57 @@ final class SimpleValidationViewController: UIViewController {
         // Button
         actionButton.setTitle("Do something", for: .normal)
         actionButton.setTitleColor(.black, for: .normal)
-//        actionButton.backgroundColor = .systemGreen
+        //        actionButton.backgroundColor = .systemGreen
         actionButton.layer.cornerRadius = 8
         actionButton.isEnabled = false
-
+        
+    }
+    
+    private func bind() {
+        let input = SimpleValidationViewModel.Input(
+            nameText: userNameTF.rx.text.orEmpty,
+            passwordText: passwordTF.rx.text.orEmpty, actionTap: actionButton.rx.tap
+        )
+        let output = viewModel.transform(input: input)
+        
+        output.isNameValid
+            .bind(to: passwordLabel.rx.isEnabled)
+            .disposed(by: disposeBag)
+        
+        output.isNameValid
+            .bind(to: userNameValidateLabel.rx.isHidden)
+            .disposed(by: disposeBag)
+        
+        output.isPasswordValid
+            .bind(to: passwordValidateLabel.rx.isHidden)
+            .disposed(by: disposeBag)
+        
+        output.isEverythingValid
+            .bind(with: self) { owner, value in
+                owner.actionButton.backgroundColor = value ? .green : .red
+                owner.actionButton.isEnabled = value
+            }
+            .disposed(by: disposeBag)
+        
+        output.showAlert
+            .bind(with: self) { owner, _ in
+                owner.showAlert()
+            }
+            .disposed(by: disposeBag)
     }
     
     private func rxTest() {
-        
         let usernameValid = userNameTF.rx.text.orEmpty
             .map { $0.count >= minimalUsernameLength }
             .share(replay: 1)
-
+        
         let passwordValid = passwordTF.rx.text.orEmpty
             .map { $0.count >= minimalPasswordLength }
             .share(replay: 1)
-
+        
         let everythingValid = Observable.combineLatest(usernameValid, passwordValid) { $0 && $1 }
             .share(replay: 1)
-
+        
         usernameValid
             .bind(to: passwordLabel.rx.isEnabled)
             .disposed(by: disposeBag)
@@ -148,7 +182,7 @@ final class SimpleValidationViewController: UIViewController {
         passwordValid
             .bind(to: passwordValidateLabel.rx.isHidden)
             .disposed(by: disposeBag)
-
+        
         
         everythingValid
             .bind(with: self) { owner, bool in
@@ -156,6 +190,7 @@ final class SimpleValidationViewController: UIViewController {
                 owner.actionButton.isEnabled = bool
             }
             .disposed(by: disposeBag)
+        
         
         actionButton.rx.tap
             .subscribe { [weak self] _ in
