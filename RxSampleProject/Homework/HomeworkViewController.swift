@@ -50,10 +50,17 @@ final class HomeworkViewController: UIViewController {
             .disposed(by: disposeBag)
         
         output.selectedUsers
-            .bind(to: collectionView.rx.items(cellIdentifier: UserCollectionViewCell.identifier, cellType: UserCollectionViewCell.self)) { (row, element, cell) in
+            .bind(to: collectionView.rx.items) { (collectionView, item, element) in
+                let indexPath = IndexPath(item: item, section: 0)
+                guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: UserCollectionViewCell.identifier, for: indexPath) as? UserCollectionViewCell else { return UICollectionViewCell() }
                 cell.configureCell(text: element.name)
+                return cell
             }
             .disposed(by: disposeBag)
+//            .bind(to: collectionView.rx.items(cellIdentifier: UserCollectionViewCell.identifier, cellType: UserCollectionViewCell.self)) { (row, element, cell) in
+//                cell.configureCell(text: element.name)
+//            }
+//            .disposed(by: disposeBag)
         
         output.clearSearchBar
             .bind(with: self) { owner, _ in
